@@ -9,21 +9,28 @@ var chrome = require('selenium-webdriver/chrome');
 
 var file = "datax.json";
 
+var options = new chrome.Options().setChromeBinaryPath("/usr/bin/chromium-browser")//.headless()
 var driver = new webdriver.Builder()
     .forBrowser('chrome')
-    //.setChromeOptions( new chrome.Options().headless())
+    .setChromeOptions(options)
     .build();
 
-
-driver.get('http://localhost:8080');
+driver.get('http://localhost:8080/940.html');
 
 function scrape() {
     setTimeout(function () {
+        var stop = false;
 
-        driver.sleep(2000).then(() => {
-            driver.findElement(
+        driver.sleep(2000).then(function(){
+            var nav = driver.findElement(
                 By.css('.navigation-next')
-            ).click();
+            ).then(function (webElement) {
+                console.log('Element exists');
+                webElement.click();
+            }, function (err) {
+                if (err.name === "NoSuchElementError")
+                    console.log("Element was missing!");
+            });
         });
 
         driver.sleep(2000).then(function () {
@@ -35,12 +42,20 @@ function scrape() {
                         convert: function (x) {
                             return x.replace('Original Title: ', '');
                         }
+                    },
+                    end: {
+                        selector: "p",
+                        convert: function (x) {
+                            console.log(x)
+                            return '-'
+                        }
+
                     }
                 });
 
                 console.log(datax);
                 jsonfile.writeFile(file, datax, { flag: 'a' }, function (err) {
-                    console.error(err);
+                    console.error(err || 'success');
                     scrape();
                 });
             });

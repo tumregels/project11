@@ -9,9 +9,10 @@ var chrome = require('selenium-webdriver/chrome');
 
 var file = "datax.json";
 
+var options = new chrome.Options().setChromeBinaryPath("/usr/bin/chromium-browser")//.headless()
 var driver = new webdriver.Builder()
     .forBrowser('chrome')
-    //.setChromeOptions( new chrome.Options().headless())
+    .setChromeOptions(options)
     .build();
 
 function scrape() {
@@ -26,7 +27,6 @@ function scrape() {
     driver.sleep(2000).then(function () {
         driver.getPageSource().then(function (body) {
 
-            //console.log(html)
             f = 'file.html'
             fs.writeFile(f, body, function (err) {
                 if (err) { throw (err); };
@@ -45,7 +45,8 @@ function scrape() {
             
             console.log(datax);
             jsonfile.writeFile(file, datax, { spaces: 2 }, function (err) {
-                console.error(err)
+                console.error(err || 'success');
+                driver.quit();
             });
         });
     });
@@ -53,4 +54,3 @@ function scrape() {
 
 scrape()
 
-driver.quit();
